@@ -1,0 +1,6 @@
+row,predicted_risk,actually_readmitted,top_drivers
+85340,0.4310985044970633,1,number_inpatient=16 (+0.996); prior_encounters=22 (+0.401); prior_visits_total=19 (+0.261); has_prior_inpatient=1 (+0.149)
+78415,0.4187292780041455,0,number_inpatient=9 (+1.043); prior_encounters=15 (+0.442); prior_visits_total=10 (+0.270); has_prior_inpatient=1 (+0.144)
+93064,0.4092639024799967,0,number_inpatient=6 (+0.940); prior_encounters=12 (+0.403); prior_visits_total=19 (+0.221); has_prior_inpatient=1 (+0.148)
+95123,0.4081120368298084,1,number_inpatient=8 (+0.960); prior_encounters=6 (+0.329); prior_visits_total=9 (+0.248); diag_2_group_Neoplasms=1 (+0.190)
+80551,0.40755460582525777,1,number_inpatient=10 (+1.062); prior_encounters=16 (+0.466); prior_visits_total=11 (+0.276); has_prior_inpatient=1 (+0.148)

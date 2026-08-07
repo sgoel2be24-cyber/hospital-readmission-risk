@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.claude/settings.local.json
+
+# Raw data is fetched with `make data` (18 MB), not committed.
+data/*.csv
+data/*.zip
+
+# 47 MB of every fitted candidate — only needed to re-inspect the comparison.
+# models/best_model.joblib IS committed so the API runs without retraining.
+models/all_models.joblib
+
+reports/scored_discharges.csv
