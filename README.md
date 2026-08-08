@@ -108,10 +108,14 @@ tests/               27 tests: leakage guards, age-band labelling, serving
 
 | file | slides | purpose |
 |---|---|---|
-| [`ML_Bubble_2026_Submission_Deck.pptx`](ML_Bubble_2026_Submission_Deck.pptx) | 9 | **The submitted deck.** Condensed for reading — every requirement covered, two figures. |
+| [`ML_Bubble_2026_Submission_Deck.pptx`](ML_Bubble_2026_Submission_Deck.pptx) · [PDF](ML_Bubble_2026_Submission_Deck.pdf) | 9 | **The submitted deck.** Condensed for reading — every requirement covered, two figures. |
 | [`ML_Bubble_2026_Presentation_Deck.pptx`](ML_Bubble_2026_Presentation_Deck.pptx) | 19 | Long form for presenting live: one idea per slide, six figures, speaker notes throughout. Regenerate with `make deck`. |
 
-Both carry the same numbers. The long deck is generated from
+Both carry the same numbers. The PDF is exported from the submission deck and
+verified page by page — 9 pages, no text rendering off-page, and the native
+comparison chart on page 4 renders with all six bars and their data labels.
+
+The long deck is generated from
 [`deck/build_deck.js`](deck/build_deck.js) so it cannot drift from the model;
 `deck/qa_deck.py` checks package integrity, geometry and text fit, since
 LibreOffice is unavailable here for image-level QA.
