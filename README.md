@@ -104,6 +104,18 @@ tests/               27 tests: leakage guards, age-band labelling, serving
                      path, bootstrap and net-benefit maths
 ```
 
+## Presentation
+
+| file | slides | purpose |
+|---|---|---|
+| [`ML_Bubble_2026_Submission_Deck.pptx`](ML_Bubble_2026_Submission_Deck.pptx) | 9 | **The submitted deck.** Condensed for reading — every requirement covered, two figures. |
+| [`ML_Bubble_2026_Presentation_Deck.pptx`](ML_Bubble_2026_Presentation_Deck.pptx) | 19 | Long form for presenting live: one idea per slide, six figures, speaker notes throughout. Regenerate with `make deck`. |
+
+Both carry the same numbers. The long deck is generated from
+[`deck/build_deck.js`](deck/build_deck.js) so it cannot drift from the model;
+`deck/qa_deck.py` checks package integrity, geometry and text fit, since
+LibreOffice is unavailable here for image-level QA.
+
 ## Documentation
 
 | document | contents |

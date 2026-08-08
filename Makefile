@@ -70,9 +70,9 @@ score:
 deck:
 	cd deck && npm install --silent pptxgenjs
 	node deck/build_deck.js
-	$(PY) deck/fix_package.py ML_Bubble_2026_Readmission_Risk.pptx
-	$(PY) deck/qa_deck.py ML_Bubble_2026_Readmission_Risk.pptx
-	$(PY) deck/preview.py ML_Bubble_2026_Readmission_Risk.pptx
+	$(PY) deck/fix_package.py ML_Bubble_2026_Presentation_Deck.pptx
+	$(PY) deck/qa_deck.py ML_Bubble_2026_Presentation_Deck.pptx
+	$(PY) deck/preview.py ML_Bubble_2026_Presentation_Deck.pptx
 
 ## full reproduction from a clean checkout
 all: data train explain evidence test

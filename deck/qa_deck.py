@@ -1,6 +1,6 @@
 """QA for the generated deck: package integrity, geometry, and text fit.
 
-    .venv/bin/python deck/qa_deck.py ML_Bubble_2026_Readmission_Risk.pptx
+    .venv/bin/python deck/qa_deck.py ML_Bubble_2026_Presentation_Deck.pptx
 
 Stands in for the skill's validate.py, which needs Python 3.10+ (this machine has
 3.9) and for image-level visual QA, which needs LibreOffice (not installed).
@@ -165,7 +165,7 @@ def dump_text(path: Path) -> None:
 
 
 def main() -> int:
-    path = Path(sys.argv[1] if len(sys.argv) > 1 else "ML_Bubble_2026_Readmission_Risk.pptx")
+    path = Path(sys.argv[1] if len(sys.argv) > 1 else "ML_Bubble_2026_Presentation_Deck.pptx")
     print(f"QA {path.name}")
 
     pkg = check_package(path)

@@ -1,6 +1,6 @@
 """Render the generated deck to HTML so its layout can be inspected visually.
 
-    .venv/bin/python deck/preview.py ML_Bubble_2026_Readmission_Risk.pptx
+    .venv/bin/python deck/preview.py ML_Bubble_2026_Presentation_Deck.pptx
 
 LibreOffice is not available on this machine, so slides cannot be rasterised the
 usual way. This reads the *written* .pptx with python-pptx — not the generator
@@ -126,7 +126,7 @@ def slide_html(slide, idx, sw, sh, media: dict) -> str:
 
 
 def main() -> int:
-    src = Path(sys.argv[1] if len(sys.argv) > 1 else "ML_Bubble_2026_Readmission_Risk.pptx")
+    src = Path(sys.argv[1] if len(sys.argv) > 1 else "ML_Bubble_2026_Presentation_Deck.pptx")
     # Optional 1-indexed slide filter, e.g. `preview.py deck.pptx 11,13,15`.
     # Embedded images are large, so a whole-deck page can overwhelm a renderer;
     # this keeps a focused review light enough to load.

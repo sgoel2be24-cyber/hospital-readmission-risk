@@ -1071,5 +1071,5 @@ function footer(s, text) {
   );
 }
 
-const out = path.join(__dirname, "..", "ML_Bubble_2026_Readmission_Risk.pptx");
+const out = path.join(__dirname, "..", "ML_Bubble_2026_Presentation_Deck.pptx");
 pptx.writeFile({ fileName: out }).then(() => console.log("wrote", out));
