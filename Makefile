@@ -1,7 +1,7 @@
 PY := .venv/bin/python
 
 .PHONY: setup data tune train experiments explain uncertainty robustness equity \
-        decision-curve evidence test api score deck all clean
+        decision-curve subgroup evidence test api score deck all clean
 
 ## one-time environment setup
 setup:
@@ -48,8 +48,12 @@ equity:
 decision-curve:
 	$(PY) -m src.decision_curve
 
+## can the oldest band be predicted better? diagnosis + three attempted fixes
+subgroup:
+	$(PY) -m src.subgroup_model
+
 ## every evidence step above, in order
-evidence: uncertainty robustness equity decision-curve
+evidence: uncertainty robustness equity decision-curve subgroup
 
 test:
 	$(PY) -m pytest

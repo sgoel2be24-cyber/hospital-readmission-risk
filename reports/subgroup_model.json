@@ -1,0 +1,69 @@
+{
+  "age_bands": {
+    "bins": [
+      0,
+      40,
+      60,
+      80,
+      100
+    ],
+    "labels": [
+      "<40",
+      "40-60",
+      "60-80",
+      "80+"
+    ],
+    "note": "age arrives in 10-year brackets, so the top band holds [80-90) and [90-100)"
+  },
+  "mean_univariate_signal": {
+    "<40": 0.07461804744645996,
+    "40-60": 0.05256903135267389,
+    "60-80": 0.03465374308226523,
+    "80+": 0.026703791528906493
+  },
+  "candidates": [
+    {
+      "model": "global",
+      "val_roc_auc_80plus": 0.6343460957713991,
+      "val_pr_auc_80plus": 0.19223115167446658,
+      "test_roc_auc_80plus": 0.6133528709321777,
+      "test_pr_auc_80plus": 0.18235716154923526,
+      "n_test_80plus": 3831,
+      "test_roc_auc_overall": 0.6839121398926495,
+      "test_pr_auc_overall": 0.23761716588136905
+    },
+    {
+      "model": "specialist_80plus",
+      "val_roc_auc_80plus": 0.6026164136183257,
+      "val_pr_auc_80plus": 0.18660581321278996,
+      "test_roc_auc_80plus": 0.5876111084234888,
+      "test_pr_auc_80plus": 0.1778167290056267,
+      "n_test_80plus": 3831,
+      "test_roc_auc_overall": NaN,
+      "test_pr_auc_overall": NaN
+    },
+    {
+      "model": "weighted_x3",
+      "val_roc_auc_80plus": 0.6287720136881322,
+      "val_pr_auc_80plus": 0.19590658597064092,
+      "test_roc_auc_80plus": 0.6086972020155469,
+      "test_pr_auc_80plus": 0.18692703898235513,
+      "n_test_80plus": 3831,
+      "test_roc_auc_overall": 0.6816958991003347,
+      "test_pr_auc_overall": 0.23552471693691063
+    },
+    {
+      "model": "weighted_x6",
+      "val_roc_auc_80plus": 0.6189137511096948,
+      "val_pr_auc_80plus": 0.19030226108203618,
+      "test_roc_auc_80plus": 0.6002884808795484,
+      "test_pr_auc_80plus": 0.17957047894863581,
+      "n_test_80plus": 3831,
+      "test_roc_auc_overall": 0.6749785865419454,
+      "test_pr_auc_overall": 0.22837603978249843
+    }
+  ],
+  "selected_on_validation": "global",
+  "gain_val_roc_auc": 0.0,
+  "gain_test_roc_auc": 0.0
+}

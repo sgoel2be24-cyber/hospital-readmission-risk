@@ -64,7 +64,7 @@ plus every metric and figure to `reports/`.
 | `make train` | train + compare all 6 models, calibrate, write reports |
 | `make experiments` | 7-variant ablation study (~2 min) |
 | `make explain` | permutation importance + SHAP + reason codes |
-| `make evidence` | bootstrap CIs, seed sweep, learning curve, equity, decision curve |
+| `make evidence` | bootstrap CIs, seed sweep, learning curve, equity, decision curve, subgroup |
 | `make test` | 26 tests |
 | `make api` | serve the scoring API on `:8000` |
 | `make score` | batch-score every encounter to CSV |
@@ -97,6 +97,7 @@ src/uncertainty.py   cluster-bootstrap CIs, incl. paired model comparisons
 src/robustness.py    seed sweep + learning curve
 src/equity.py        age-stratified thresholds, per-subgroup calibration
 src/decision_curve.py  net benefit vs call-everyone / call-nobody
+src/subgroup_model.py  why the oldest band cannot be predicted better
 src/predict.py       batch scoring CLI
 src/api.py           FastAPI service
 tests/               26 tests: leakage guards, serving path, bootstrap and
@@ -118,7 +119,7 @@ Generated artefacts live in `reports/`: [metrics.json](reports/metrics.json),
 [robustness.json](reports/robustness.json),
 [equity.json](reports/equity.json),
 [decision_curve.json](reports/decision_curve.json),
-[fairness_report.csv](reports/fairness_report.csv), and thirteen figures in
+[fairness_report.csv](reports/fairness_report.csv), and fourteen figures in
 `reports/figures/`.
 
 ## The one decision that matters most
@@ -152,4 +153,8 @@ queue. Inference is sub-millisecond; the whole service is one 5 MB artefact.
 
 Before any real use, the subgroup gaps in
 [docs/RESULTS.md](docs/RESULTS.md#fairness) need addressing — most notably that
-discrimination degrades for patients over 75, the group being flagged most often.
+discrimination degrades for patients over 80, the group being flagged most often.
+We chased that one: the signal genuinely is not in these columns (every feature's
+univariate AUC decays with age, and a dedicated model, sample weighting, and
+stratified thresholds all fail to beat the global model). Closing it needs
+frailty and functional-status variables this dataset does not carry.

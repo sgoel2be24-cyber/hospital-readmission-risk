@@ -3,7 +3,7 @@
     python -m src.equity
 
 1. **Stratified thresholds.** A single global threshold flags 23.0% of patients
-   over 75 while ranking them worst (ROC-AUC 0.613) — the tool spends its most
+   aged 80+ while ranking them worst (ROC-AUC 0.613) — the tool spends its most
    capacity where its ordering is least trustworthy. Does giving each age band
    its own threshold help?
 
@@ -35,20 +35,28 @@ from sklearn.metrics import brier_score_loss, precision_score, recall_score, roc
 
 import joblib
 
-from .config import CAPACITY_FRACTION, FIGURE_DIR, MODEL_DIR, REPORT_DIR, TEST_SIZE, VAL_SIZE
+from .config import (
+    AGE_BINS,
+    AGE_LABELS,
+    CAPACITY_FRACTION,
+    FIGURE_DIR,
+    MODEL_DIR,
+    OLDEST_BAND,
+    REPORT_DIR,
+    TEST_SIZE,
+    VAL_SIZE,
+)
 from .data_prep import build_dataset
 from .evaluate import capacity_threshold
 from .train import grouped_split
 
 warnings.filterwarnings("ignore", message="X does not have valid feature names")
 
-AGE_BINS = [0, 40, 60, 75, 100]
-AGE_LABELS = ["<40", "40-60", "60-75", "75+"]
 MIN_GROUP = 200
 
 
 def age_band(series: pd.Series) -> pd.Series:
-    return pd.cut(series, bins=AGE_BINS, labels=AGE_LABELS).astype(str)
+    return pd.cut(series, bins=AGE_BINS, labels=AGE_LABELS, right=False).astype(str)
 
 
 # --------------------------------------------------------------------------- #
@@ -173,11 +181,11 @@ def main() -> dict:
               f"precision {v['precision']:.4f}  TP {v['true_positives']}")
 
     delta_tp = overall["age-stratified"]["true_positives"] - overall["global"]["true_positives"]
-    g75 = tbl_global[tbl_global["band"] == "75+"].iloc[0]
-    s75 = tbl_strat[tbl_strat["band"] == "75+"].iloc[0]
+    g_old = tbl_global[tbl_global["band"] == OLDEST_BAND].iloc[0]
+    s_old = tbl_strat[tbl_strat["band"] == OLDEST_BAND].iloc[0]
     print(f"\n[verdict] stratifying costs {-delta_tp} true positives overall; "
-          f"75+ flag rate {g75['flag_rate']:.3f} -> {s75['flag_rate']:.3f}, "
-          f"precision {g75['precision']:.3f} -> {s75['precision']:.3f}")
+          f"{OLDEST_BAND} flag rate {g_old['flag_rate']:.3f} -> {s_old['flag_rate']:.3f}, "
+          f"precision {g_old['precision']:.3f} -> {s_old['precision']:.3f}")
 
     # ---------------- 2. subgroup calibration ------------------------------ #
     cal_frames = [

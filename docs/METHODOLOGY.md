@@ -224,22 +224,22 @@ across `race`, `gender`, and age band
 Protected attributes are kept as features rather than dropped. Removing `race`
 does not remove its influence — it is reconstructable from other columns — it
 only removes the ability to measure the disparity. The gaps this surfaces are
-reported honestly in [RESULTS.md](RESULTS.md#fairness); the over-75 result is the
+reported honestly in [RESULTS.md](RESULTS.md#fairness); the over-80 result is the
 one that would block deployment.
 
 Two further checks (`src/equity.py`):
 
 **Per-subgroup calibration**, not just discrimination. A risk score can be well
 calibrated overall while systematically misleading for one group. Gender and the
-two large racial groups come out near-perfect; patients over 75 have a
+two large racial groups come out near-perfect; patients over 80 have a
 calibration slope of 0.79, corroborating the discrimination finding from an
 independent angle.
 
 **Age-stratified thresholds**, tested rather than assumed. Giving each age band
 its own capacity threshold costs 10 true positives out of 901 and moves calls
-away from over-75s toward the 40–60 band. It does not fix the underlying problem,
+away from the oldest band toward the 40–60 band. It does not fix the underlying problem,
 because thresholds reallocate capacity and cannot change ranking — and since
-over-75s have the highest base rate in the data, whether the reallocation is
+the oldest band have the highest base rate in the data, whether the reallocation is
 *fairer* is a value judgement rather than a metric. Documented as a measured
 trade-off, not a solution.
 

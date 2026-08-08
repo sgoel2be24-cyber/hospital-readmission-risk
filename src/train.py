@@ -20,6 +20,8 @@ from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_s
 
 from . import evaluate as ev
 from .config import (
+    AGE_BINS,
+    AGE_LABELS,
     CAPACITY_FRACTION,
     CV_FOLDS,
     MODEL_DIR,
@@ -184,8 +186,7 @@ def main(run_cv: bool = True) -> dict:
     for attribute in ("race", "gender", "age_mid"):
         col = X_test[attribute]
         if attribute == "age_mid":
-            col = pd.cut(col, bins=[0, 40, 60, 75, 100], labels=["<40", "40-60", "60-75", "75+"])
-            col = col.astype(str)
+            col = pd.cut(col, bins=AGE_BINS, labels=AGE_LABELS, right=False).astype(str)
         report = ev.subgroup_report(y_test.to_numpy(), cal_test, col, thr_cal)
         report.insert(0, "attribute", attribute)
         fairness[attribute] = report

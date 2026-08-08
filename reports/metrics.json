@@ -130,7 +130,7 @@
       "test_recall_at_capacity": 0.35784313725490197,
       "test_precision_at_capacity": 0.21009942438513868,
       "test_lift_at_capacity": 1.8512905162064826,
-      "fit_seconds": 4.2
+      "fit_seconds": 4.1
     },
     {
       "model": "random_forest",
@@ -146,7 +146,7 @@
       "test_recall_at_capacity": 0.3877005347593583,
       "test_precision_at_capacity": 0.22382299974273218,
       "test_lift_at_capacity": 1.972215763775866,
-      "fit_seconds": 19.4
+      "fit_seconds": 18.6
     },
     {
       "model": "xgboost",
@@ -162,7 +162,7 @@
       "test_recall_at_capacity": 0.3983957219251337,
       "test_precision_at_capacity": 0.23094807543270474,
       "test_lift_at_capacity": 2.0349983491670547,
-      "fit_seconds": 10.4
+      "fit_seconds": 9.3
     },
     {
       "model": "lightgbm",
@@ -178,7 +178,7 @@
       "test_recall_at_capacity": 0.4015151515151515,
       "test_precision_at_capacity": 0.2330574236937403,
       "test_lift_at_capacity": 2.053584865729201,
-      "fit_seconds": 16.8
+      "fit_seconds": 15.3
     },
     {
       "model": "mlp",
@@ -194,8 +194,8 @@
       "test_recall_at_capacity": 0.3631907308377897,
       "test_precision_at_capacity": 0.2083866018920992,
       "test_lift_at_capacity": 1.8361979853888046,
-      "fit_seconds": 6.6
+      "fit_seconds": 6.7
     }
   ],
-  "runtime_seconds": 63.4
+  "runtime_seconds": 59.9
 }

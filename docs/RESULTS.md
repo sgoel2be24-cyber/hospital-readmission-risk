@@ -330,19 +330,19 @@ Per-subgroup performance at the deployed threshold
 |---|---|---|---|---|---|---|
 | <40 | 1,289 | 12.2% | 20.2% | 58.0% | 34.9% | 0.784 |
 | 40–60 | 5,376 | 10.4% | 14.8% | 39.6% | 27.9% | 0.712 |
-| 60–75 | 9,277 | 11.4% | 20.8% | 39.7% | 21.8% | 0.673 |
-| **75+** | **3,831** | **12.2%** | **23.0%** | **35.8%** | **19.0%** | **0.613** |
+| 60–80 | 9,277 | 11.4% | 20.8% | 39.7% | 21.8% | 0.673 |
+| **80+** | **3,831** | **12.2%** | **23.0%** | **35.8%** | **19.0%** | **0.613** |
 
 **The finding that matters is age, not race.** Race and gender gaps are modest —
 the two large racial groups get near-identical flag rates and recall.
 
-The over-75 group is the problem. It has the **highest flag rate (23.0%)**, the
+The over-80 group is the problem. It has the **highest flag rate (23.0%)**, the
 **lowest precision (19.0%)**, the **lowest recall (35.8%)**, and by far the
 **worst discrimination (ROC-AUC 0.613)**. The model flags the most elderly
 patients while ranking them worst — it is spending disproportionate follow-up
 capacity on the group where its ordering is least trustworthy. Since almost
 everything the model relies on is a proxy for frailty, and nearly all patients
-over 75 look frail, the features stop separating within that group.
+over 80 look frail, the features stop separating within that group.
 
 **This would have to be addressed before deployment.** The obvious fix is an
 age-stratified threshold, so we tried it and measured the result.
@@ -363,21 +363,21 @@ Per band:
 |---|---|---|
 | <40 | 20.3% → 23.1% | 58.0% → 60.5% |
 | 40–60 | 14.8% → 20.6% | 39.6% → 46.1% |
-| 60–75 | 20.8% → 19.4% | 39.7% → 37.6% |
-| **75+** | **23.0% → 19.0%** | **35.8% → 30.0%** |
+| 60–80 | 20.8% → 19.4% | 39.7% → 37.6% |
+| **80+** | **23.0% → 19.0%** | **35.8% → 30.0%** |
 
 ![equity](../reports/figures/equity.png)
 
 **It does not fix the problem, and the reason is instructive.** Thresholds move
-capacity around; they cannot change ranking. The 75+ ROC-AUC is 0.613 under both
+capacity around; they cannot change ranking. The 80+ ROC-AUC is 0.613 under both
 policies, because it is the same model scoring the same patients. What
-stratifying actually does is take follow-up calls *away* from patients over 75
+stratifying actually does is take follow-up calls *away* from patients over 80
 and give them to patients aged 40–60, where the model discriminates better.
 
 Total cost: 10 true positives out of 901 — about 1%.
 
 **Whether that is an improvement is a value judgement, not a metric.** Patients
-over 75 have the *highest* base rate in the dataset (12.2%), so a policy that
+over 80 have the *highest* base rate in the dataset (12.2%), so a policy that
 calls fewer of them is not obviously fair, even though it equalises exposure. The
 global threshold gives the highest-risk group the most attention; the stratified
 one gives every group equal attention. Those encode different definitions of
@@ -387,6 +387,74 @@ What is not a value judgement: **the underlying problem is discrimination, not
 calibration, and no threshold policy can repair it.** A real fix has to be
 upstream — features that separate frailty *within* an elderly population, or a
 model fitted specifically for that group.
+
+### Can the oldest patients be predicted better at all?
+
+Thresholds failed, so the next question is whether the *ranking* can be improved.
+Diagnose before prescribing: is the signal missing from the data, or is the model
+failing to use it?
+
+**Univariate AUC of each feature, within each band.** This is model-free — it asks
+how well a single raw number separates outcomes among patients of that age.
+
+| feature | <40 | 40-60 | 60-80 | 80+ |
+|---|---|---|---|---|
+| `number_inpatient` | 0.710 | 0.635 | 0.592 | 0.574 |
+| `prior_visits_total` | 0.709 | 0.631 | 0.588 | 0.573 |
+| `has_prior_inpatient` | 0.683 | 0.618 | 0.579 | 0.564 |
+| `prior_encounters` | 0.669 | 0.624 | 0.577 | 0.566 |
+| `number_emergency` | 0.605 | 0.546 | 0.525 | 0.517 |
+| `number_diagnoses` | 0.587 | 0.574 | 0.537 | **0.509** |
+| **mean \|AUC − 0.5\| over all features** | **0.075** | **0.053** | **0.035** | **0.027** |
+
+**The signal decays monotonically with age, feature by feature.** Prior inpatient
+admissions — the single strongest predictor overall — falls from 0.710 to 0.574.
+`number_diagnoses` reaches 0.509, which is indistinguishable from noise. Averaged
+across every numeric feature, an 80+ patient carries roughly **a third** of the
+separable signal a under-40 patient does.
+
+This confirms the frailty-saturation hypothesis with a measurement rather than an
+assertion: these features work by identifying patients who look sick and heavily
+used the system, and among the over-80s almost everyone does.
+
+**Three fixes, all measured, all rejected.** Selection on validation; the 80+ test
+slice is 3,831 encounters.
+
+| approach | val ROC-AUC (80+) | test ROC-AUC (80+) | overall test ROC-AUC |
+|---|---|---|---|
+| **Global model (current)** | **0.6343** | **0.6134** | **0.6839** |
+| Dedicated 80+ model | 0.6026 | 0.5876 | — |
+| Sample weight ×3 on 80+ | 0.6288 | 0.6087 | 0.6817 |
+| Sample weight ×6 on 80+ | 0.6189 | 0.6003 | 0.6750 |
+
+![subgroup model](../reports/figures/subgroup_model.png)
+
+Nothing beats the global model, and the failures are informative:
+
+- **A dedicated model is the worst option** (0.588). Trained on 12,122 rows
+  instead of 63,605, it loses more to variance than it gains from specialisation.
+  The general model's exposure to younger patients is *helping* it rank older
+  ones — the relationships transfer even as their strength decays.
+- **Upweighting makes both groups worse.** Pushing the loss toward the 80+ band
+  degrades overall ROC-AUC (0.6839 → 0.6750 at ×6) *and* fails to improve the
+  band it was meant to help. There is nothing extra to learn; the optimiser just
+  overfits noise in that slice.
+
+**Conclusion: the ceiling for the oldest patients is a data limit, not a
+modelling one.** No reweighting, specialisation, or threshold policy recovers
+signal that is not in the columns. Fixing it needs variables this dataset does
+not contain — functional status, frailty index, cognitive status, social support
+at home, prior falls — which is precisely the information geriatric readmission
+research says matters and administrative billing data omits.
+
+One further explanation we cannot test here: **competing risk.** A patient
+discharged alive who dies at home within 30 days is recorded as "not readmitted".
+That misclassification is concentrated in the oldest band by construction, and it
+would depress measurable discrimination exactly where we observe it. The dataset
+has no post-discharge mortality, so this stays a hypothesis — but a well-founded
+one.
+
+Reproduce with `make subgroup`.
 
 ### Calibration within subgroups
 
@@ -402,8 +470,8 @@ probability, whether "18%" means 18% *for this patient's group* matters as much.
 | race | Hispanic | 398 | 9.05% | 10.52% | 1.16 | 1.67 | 0.074 |
 | race | Unknown | 447 | 7.16% | 9.61% | **1.34** | 0.86 | 0.066 |
 | age | 40–60 | 5,376 | 10.42% | 9.83% | 0.94 | 1.12 | 0.086 |
-| age | 60–75 | 9,277 | 11.43% | 11.65% | 1.02 | 1.04 | 0.097 |
-| age | **75+** | 3,831 | 12.19% | 12.63% | 1.04 | **0.79** | **0.105** |
+| age | 60–80 | 9,277 | 11.43% | 11.65% | 1.02 | 1.04 | 0.097 |
+| age | **80+** | 3,831 | 12.19% | 12.63% | 1.04 | **0.79** | **0.105** |
 | age | <40 | 1,289 | 12.18% | 10.98% | 0.90 | 1.28 | 0.092 |
 
 *Ratio* = predicted mean ÷ observed rate (1.0 is ideal; >1 overstates risk).
@@ -420,7 +488,7 @@ Two flags:
   is noisy, but it is consistent with `payer_code_Unknown` being a top-6 driver —
   the model appears to treat administrative missingness as a risk signal harder
   than the outcomes justify.
-- **Patients 75+ have a calibration slope of 0.79 and the worst Brier (0.105).**
+- **Patients 80+ have a calibration slope of 0.79 and the worst Brier (0.105).**
   Predictions for this group are spread too wide: the model is over-confident at
   both ends. This corroborates the discrimination finding from a completely
   independent angle, which is the strongest form the evidence could take.

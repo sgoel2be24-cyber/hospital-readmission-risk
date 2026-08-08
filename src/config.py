@@ -51,3 +51,14 @@ KEY_MEDICATION_COLS = ["metformin", "insulin", "glipizide", "glyburide", "piogli
 
 TARGET_COL = "readmitted"
 POSITIVE_LABEL = "<30"
+
+# Age bands used by every fairness and subgroup report. Defined once here
+# because they were previously duplicated and mislabelled.
+#
+# `age` arrives as 10-year brackets, so `age_mid` only ever takes the values
+# 5, 15, ... 95. With right=False the top band holds age_mid 85 and 95 — that
+# is the [80-90) and [90-100) brackets. Naming it "75+" (as an earlier cut at
+# 75 did) overstated who was in it: the [70-80) bracket sits in the band below.
+AGE_BINS = [0, 40, 60, 80, 100]
+AGE_LABELS = ["<40", "40-60", "60-80", "80+"]
+OLDEST_BAND = "80+"

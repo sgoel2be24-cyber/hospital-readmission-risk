@@ -780,8 +780,8 @@ function footer(s, text) {
     ["Age band", "n", "Flag rate", "Recall", "Precision", "ROC-AUC"],
     ["Under 40", "1,289", "20.2%", "58.0%", "34.9%", "0.784"],
     ["40–60", "5,376", "14.8%", "39.6%", "27.9%", "0.712"],
-    ["60–75", "9,277", "20.8%", "39.7%", "21.8%", "0.673"],
-    ["75 and over", "3,831", "23.0%", "35.8%", "19.0%", "0.613"],
+    ["60–80", "9,277", "20.8%", "39.7%", "21.8%", "0.673"],
+    ["80 and over", "3,831", "23.0%", "35.8%", "19.0%", "0.613"],
   ];
   s.addTable(rows, {
     x: M, y: 1.9, w: 7.2,
@@ -797,11 +797,11 @@ function footer(s, text) {
     fontFace: HEAD, fontSize: 16, bold: true, color: INK, margin: 0,
   });
   s.addText(
-    "The two large racial groups get near-identical flag rates and recall. Patients over 75, however, are flagged most often (23.0%) while the model ranks them worst (ROC-AUC 0.613) — so the tool spends disproportionate follow-up capacity on the group where its ordering is least trustworthy.",
+    "The two large racial groups get near-identical flag rates and recall. Patients over 80, however, are flagged most often (23.0%) while the model ranks them worst (ROC-AUC 0.613) — so the tool spends disproportionate follow-up capacity on the group where its ordering is least trustworthy.",
     { x: M, y: 4.26, w: 7.2, h: 1.4, fontFace: BODY, fontSize: 13, color: "34525E", margin: 0, lineSpacing: 18 }
   );
   s.addText(
-    "Almost everything the model relies on is a proxy for frailty, and nearly all patients over 75 look frail — so the features stop separating within that group.",
+    "Almost everything the model relies on is a proxy for frailty, and nearly all patients over 80 look frail — so the features stop separating within that group.",
     { x: M, y: 5.62, w: 7.2, h: 0.7, fontFace: BODY, fontSize: 12.5, italic: true, color: MUTED, margin: 0, lineSpacing: 17 }
   );
 
@@ -812,9 +812,9 @@ function footer(s, text) {
   });
   s.addText(
     [
-      { text: "A separate model for over-75s", options: { bullet: true, breakLine: true } },
+      { text: "A separate model for the oldest band", options: { bullet: true, breakLine: true } },
       { text: "Or an age-stratified threshold", options: { bullet: true, breakLine: true } },
-      { text: "Or restrict the tool to under-75s and triage older patients by existing clinical judgement", options: { bullet: true } },
+      { text: "Or restrict the tool to under-80s and triage older patients by existing clinical judgement", options: { bullet: true } },
     ],
     { x: 8.4, y: 2.6, w: 4.02, h: 2.0, fontFace: BODY, fontSize: 13, color: "7A2A1C", margin: 0, paraSpaceAfter: 10, lineSpacing: 18 }
   );
@@ -851,11 +851,11 @@ function footer(s, text) {
     fill: { color: "FFFFFF" },
   });
   s.addText(
-    "Stratifying moves calls away from over-75s and toward the 40–60 band, at a cost of 10 true positives.",
+    "Stratifying moves calls away from the oldest band and toward the 40–60 band, at a cost of 10 true positives.",
     { x: 8.06, y: 3.14, w: 4.66, h: 0.8, fontFace: BODY, fontSize: 12, color: "34525E", margin: 0, lineSpacing: 16 }
   );
   card(s, 8.06, 3.94, 4.66, 0.54, MIST);
-  s.addText("75+ ROC-AUC is 0.613 under both policies.", {
+  s.addText("80+ ROC-AUC is 0.613 under both policies.", {
     x: 8.3, y: 3.94, w: 4.18, h: 0.54,
     fontFace: BODY, fontSize: 11.5, bold: true, color: INK, margin: 0, valign: "middle",
   });
@@ -866,7 +866,7 @@ function footer(s, text) {
     fontFace: HEAD, fontSize: 14, bold: true, color: PAPER, margin: 0,
   });
   s.addText(
-    "The 75+ problem is discrimination, not calibration. No threshold policy repairs it — a real fix has to be upstream: features that separate frailty within an elderly population, or a model fitted for that group.",
+    "The 80+ problem is discrimination, not calibration. No threshold policy repairs it — a real fix has to be upstream: features that separate frailty within an elderly population, or a model fitted for that group.",
     { x: M + 0.3, y: 5.2, w: 5.42, h: 0.9, fontFace: BODY, fontSize: 11, color: CHALK, margin: 0, lineSpacing: 14 }
   );
 
@@ -876,12 +876,93 @@ function footer(s, text) {
     fontFace: HEAD, fontSize: 14, bold: true, color: "8A5217", margin: 0,
   });
   s.addText(
-    "Patients over 75 have the highest base rate in the data (12.2%). A policy that calls fewer of them equalises exposure but withdraws attention from the highest-risk group. That is a hospital's value judgement, not a metric.",
+    "Patients over 80 have the highest base rate in the data (12.2%). A policy that calls fewer of them equalises exposure but withdraws attention from the highest-risk group. That is a hospital's value judgement, not a metric.",
     { x: 7.14, y: 5.2, w: 5.3, h: 0.9, fontFace: BODY, fontSize: 11, color: "6B4213", margin: 0, lineSpacing: 14 }
   );
   s.addNotes(
     "The honest framing: two definitions of fairness disagree here. Equal flag rate vs attention proportional to risk. " +
     "We measured the trade and handed the choice to the hospital rather than picking one silently."
+  );
+}
+
+// ============================================== 17. why it cannot be fixed ==
+{
+  const s = lightSlide("The signal is not in the data — measured, not assumed", "Root cause");
+  s.addText("Univariate AUC of each feature within each age band. Model-free: how well one raw number separates outcomes.", {
+    x: M, y: 1.44, w: CW, h: 0.3, fontFace: BODY, fontSize: 12.5, color: MUTED, margin: 0,
+  });
+
+  const rows = [
+    ["Feature", "<40", "40-60", "60-80", "80+"],
+    ["number_inpatient", "0.710", "0.635", "0.592", "0.574"],
+    ["prior_visits_total", "0.709", "0.631", "0.588", "0.573"],
+    ["prior_encounters", "0.669", "0.624", "0.577", "0.566"],
+    ["number_diagnoses", "0.587", "0.574", "0.537", "0.509"],
+    ["mean |AUC − 0.5|", "0.075", "0.053", "0.035", "0.027"],
+  ];
+  s.addTable(rows, {
+    x: M, y: 1.9, w: 7.0,
+    colW: [2.6, 1.1, 1.1, 1.1, 1.1],
+    rowH: [0.34, 0.32, 0.32, 0.32, 0.32, 0.36],
+    fontFace: BODY, fontSize: 11.5, color: "1F3D49",
+    border: { type: "solid", color: "DCE7EB", pt: 1 },
+    fill: { color: "FFFFFF" },
+  });
+
+  s.addText("Every feature decays with age. An 80+ patient carries about a third of the separable signal.", {
+    x: M, y: 4.02, w: 7.0, h: 0.62,
+    fontFace: HEAD, fontSize: 14.5, bold: true, color: INK, margin: 0, lineSpacing: 19,
+  });
+  s.addText(
+    "These features work by spotting patients who look sick and use the system heavily. Among the over-80s, almost everyone does — so they stop separating.",
+    { x: M, y: 4.7, w: 7.0, h: 0.8, fontFace: BODY, fontSize: 12.5, color: "34525E", margin: 0, lineSpacing: 17 }
+  );
+
+  const fixes = [
+    ["Global model (current)", "0.6134", true],
+    ["Dedicated 80+ model", "0.5876", false],
+    ["Sample weight ×3", "0.6087", false],
+    ["Sample weight ×6", "0.6003", false],
+  ];
+  s.addText("Three fixes tried. None win.", {
+    x: 7.9, y: 1.9, w: 4.82, h: 0.32,
+    fontFace: HEAD, fontSize: 15, bold: true, color: INK, margin: 0,
+  });
+  fixes.forEach(([label, score, isBest], i) => {
+    const y = 2.32 + i * 0.56;
+    card(s, 7.9, y, 4.82, 0.46, isBest ? "E2F0E9" : MIST);
+    s.addText(label, {
+      x: 8.14, y, w: 3.1, h: 0.46,
+      fontFace: BODY, fontSize: 12, bold: isBest, color: isBest ? "1D4D39" : "34525E",
+      margin: 0, valign: "middle",
+    });
+    s.addText(score, {
+      x: 11.3, y, w: 1.16, h: 0.46,
+      fontFace: BODY, fontSize: 12, bold: true, color: isBest ? "1D4D39" : "34525E",
+      margin: 0, valign: "middle", align: "right",
+    });
+  });
+  s.addText("ROC-AUC on the 3,831-encounter 80+ test slice.", {
+    x: 7.9, y: 4.62, w: 4.82, h: 0.28,
+    fontFace: BODY, fontSize: 10.5, italic: true, color: MUTED, margin: 0,
+  });
+
+  card(s, 7.9, 5.0, 4.82, 1.5, "FBE4E0");
+  s.addText("A data limit, not a modelling one", {
+    x: 8.14, y: 5.16, w: 4.34, h: 0.32,
+    fontFace: HEAD, fontSize: 14, bold: true, color: "9E3423", margin: 0,
+  });
+  s.addText(
+    "Closing this needs variables the dataset does not carry — frailty index, functional status, cognition, social support at home.",
+    { x: 8.14, y: 5.5, w: 4.34, h: 0.9, fontFace: BODY, fontSize: 11.5, color: "7A2A1C", margin: 0, lineSpacing: 15 }
+  );
+
+  footer(s, "The dedicated model is the worst option: exposure to younger patients helps the global model rank older ones.");
+  s.addNotes(
+    "This is the payoff for diagnosing before prescribing. Also worth raising if asked: competing risk. " +
+    "A patient discharged alive who dies at home inside 30 days is recorded as 'not readmitted'. That misclassification " +
+    "concentrates in the oldest band by construction and would depress measurable discrimination exactly where we see it. " +
+    "No post-discharge mortality in this dataset, so it stays a hypothesis."
   );
 }
 
@@ -957,7 +1038,7 @@ function footer(s, text) {
     ["Discrimination is modest — and that is the ceiling.", "0.684 sits inside the 0.64–0.70 band published for this dataset. Seven approaches converged there."],
     ["payer_code_Unknown is a top-6 driver.", "Insurance coding is not physiology. It may not transfer to a new hospital — first thing to re-examine on local data."],
     ["The data is 1999–2008.", "Coding standards, drug availability and discharge policy have all moved. Recalibration is mandatory."],
-    ["59.8% of readmissions are missed at 20% capacity.", "This reprioritises attention. An unflagged patient is not a safe patient."],
+    ["The oldest patients cannot be ranked well, and we know why.", "Every feature's signal decays with age. Three fixes failed. It needs frailty data this dataset lacks."],
   ];
   lims.forEach(([t, d], i) => {
     const y = 2.0 + i * 1.06;
