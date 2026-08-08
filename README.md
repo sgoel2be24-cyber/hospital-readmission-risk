@@ -28,8 +28,19 @@ Scoring every discharge and calling the highest-risk 20%:
 | Precision of the call list | **23.3%** | 11.3% |
 | Lift over base rate | **2.05×** | 1.00× |
 
-On the held-out test set of 19,773 encounters: **ROC-AUC 0.684**, **PR-AUC 0.238**
-against a base rate of 0.113, **Brier 0.095** after calibration.
+On the held-out test set of 19,773 encounters: **ROC-AUC 0.684** (95% CI
+0.671–0.698), **PR-AUC 0.238** (0.213–0.265) against a base rate of 0.113,
+**Brier 0.095** after calibration. Intervals are a cluster bootstrap over
+patients.
+
+Across seven random splits the same pipeline averages **ROC-AUC 0.678 ± 0.006**
+and **PR-AUC 0.224 ± 0.010** — the reported split is the most favourable of the
+seven, and [docs/RESULTS.md](docs/RESULTS.md#robustness) says so rather than
+burying it.
+
+Decision curve analysis puts it concretely: **15.6 extra readmissions caught per
+1,000 discharges**, net of the false alarms they cost, and the model beats both
+"call everyone" and "call nobody" across every plausible cost assumption.
 
 > **A note on accuracy.** This model is 78.2% accurate. A model that predicts "no
 > readmission" for everyone is 88.6% accurate and catches zero readmissions. With
@@ -53,7 +64,8 @@ plus every metric and figure to `reports/`.
 | `make train` | train + compare all 6 models, calibrate, write reports |
 | `make experiments` | 7-variant ablation study (~2 min) |
 | `make explain` | permutation importance + SHAP + reason codes |
-| `make test` | 17 tests |
+| `make evidence` | bootstrap CIs, seed sweep, learning curve, equity, decision curve |
+| `make test` | 26 tests |
 | `make api` | serve the scoring API on `:8000` |
 | `make score` | batch-score every encounter to CSV |
 
@@ -81,9 +93,14 @@ src/train.py         train, compare, calibrate, fairness, figures
 src/evaluate.py      metrics, operating point, subgroup report, plots
 src/experiments.py   ablation study — every variant we tried and rejected
 src/explain.py       permutation importance, SHAP, per-patient reason codes
+src/uncertainty.py   cluster-bootstrap CIs, incl. paired model comparisons
+src/robustness.py    seed sweep + learning curve
+src/equity.py        age-stratified thresholds, per-subgroup calibration
+src/decision_curve.py  net benefit vs call-everyone / call-nobody
 src/predict.py       batch scoring CLI
 src/api.py           FastAPI service
-tests/               17 tests, 5 of them guarding leakage and the serving path
+tests/               26 tests: leakage guards, serving path, bootstrap and
+                     net-benefit maths
 ```
 
 ## Documentation
@@ -97,7 +114,11 @@ tests/               17 tests, 5 of them guarding leakage and the serving path
 Generated artefacts live in `reports/`: [metrics.json](reports/metrics.json),
 [model_comparison.csv](reports/model_comparison.csv),
 [ablation_study.csv](reports/ablation_study.csv),
-[fairness_report.csv](reports/fairness_report.csv), and nine figures in
+[bootstrap_ci.json](reports/bootstrap_ci.json),
+[robustness.json](reports/robustness.json),
+[equity.json](reports/equity.json),
+[decision_curve.json](reports/decision_curve.json),
+[fairness_report.csv](reports/fairness_report.csv), and thirteen figures in
 `reports/figures/`.
 
 ## The one decision that matters most

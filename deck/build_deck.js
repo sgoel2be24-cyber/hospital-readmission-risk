@@ -434,16 +434,16 @@ function footer(s, text) {
   );
 
   card(s, 7.44, 4.14, 5.28, 2.0, "FFF3E6");
-  s.addText("Read honestly", {
+  s.addText("Which gaps are real?", {
     x: 7.74, y: 4.32, w: 4.68, h: 0.32,
     fontFace: HEAD, fontSize: 15, bold: true, color: "8A5217", margin: 0,
   });
   s.addText(
-    "XGBoost is 0.0003 ROC-AUC behind — inside a fold-to-fold standard deviation of 0.006. The defensible claim is that boosting beats linear and bagged models by ~0.02 PR-AUC, and the two boosters are indistinguishable.",
-    { x: 7.74, y: 4.7, w: 4.68, h: 1.3, fontFace: BODY, fontSize: 12, color: "6B4213", margin: 0, lineSpacing: 16 }
+    "Paired bootstrap on \u0394 PR-AUC:\n\nvs XGBoost   +0.0022  [\u22120.0017, +0.0058]   not resolved\nvs Random forest   +0.0124  [+0.0064, +0.0189]   resolved\nvs Logistic reg.   +0.0249  [+0.0177, +0.0321]   resolved",
+    { x: 7.74, y: 4.7, w: 4.68, h: 1.3, fontFace: BODY, fontSize: 10.5, color: "6B4213", margin: 0, lineSpacing: 14 }
   );
 
-  footer(s, "Logistic regression reaches 0.213 — 89% of the boosted result from a fully interpretable model.");
+  footer(s, "Boosting genuinely beats bagging and linear models. Which booster wins is not resolved by this data.");
   s.addNotes(
     "If asked why LightGBM over XGBoost: validation PR-AUC, and it is genuinely a coin flip. Saying so is more credible than claiming a 0.0003 win."
   );
@@ -586,6 +586,53 @@ function footer(s, text) {
   s.addNotes("Capacity-sweep rows use test-quantile thresholds, so they differ marginally from the deployed 40.2%/23.3%, where the threshold is fixed on validation.");
 }
 
+// ==================================================== 11. decision curve ===
+{
+  const s = lightSlide("Is acting on it better than what they do today?", "Clinical value");
+  s.addText("Discrimination says the ranking is good. It does not say that using it beats calling everyone, or calling nobody.", {
+    x: M, y: 1.44, w: CW, h: 0.3, fontFace: BODY, fontSize: 12.5, color: MUTED, margin: 0,
+  });
+
+  s.addImage({ path: path.join(REPORTS, "decision_curve.png"), x: M, y: 1.86, w: 6.35, h: 4.32 });
+
+  card(s, 7.3, 1.9, 5.42, 1.44, MIST);
+  s.addText("Decision curve analysis", {
+    x: 7.58, y: 2.06, w: 4.86, h: 0.32,
+    fontFace: HEAD, fontSize: 15, bold: true, color: INK, margin: 0,
+  });
+  s.addText(
+    "net benefit = TP/N − (FP/N) × pt/(1−pt)\n\npt is the risk at which a call becomes worthwhile — it encodes the cost ratio.",
+    { x: 7.58, y: 2.42, w: 4.86, h: 0.86, fontFace: BODY, fontSize: 11.5, color: "34525E", margin: 0, lineSpacing: 15 }
+  );
+
+  const rows = [
+    ["Policy", "Net benefit"],
+    ["Use the model", "+0.0157"],
+    ["Call everyone", "−0.0617"],
+    ["Call nobody", "0.0000"],
+  ];
+  s.addTable(rows, {
+    x: 7.3, y: 3.52, w: 5.42,
+    colW: [3.2, 2.22],
+    rowH: [0.34, 0.36, 0.36, 0.36],
+    fontFace: BODY, fontSize: 12.5, color: "1F3D49",
+    border: { type: "solid", color: "DCE7EB", pt: 1 },
+    fill: { color: "FFFFFF" },
+  });
+
+  card(s, 7.3, 5.06, 5.42, 1.1, "E2F0E9");
+  s.addText("15.6 extra readmissions caught per 1,000 discharges, net of the false alarms they cost.", {
+    x: 7.58, y: 5.06, w: 4.86, h: 1.1,
+    fontFace: BODY, fontSize: 12.5, bold: true, color: "1D4D39", margin: 0, valign: "middle", lineSpacing: 16,
+  });
+
+  footer(s, "Model beats both alternatives for pt between 0.025 and 0.43 — every realistic hospital sits inside that range.");
+  s.addNotes(
+    "Note that 'call everyone' is worse than doing nothing at this exchange rate: the false-alarm burden swamps the benefit. " +
+    "That is precisely the situation a triage model exists to fix. Vickers & Elkin 2006 is the reference."
+  );
+}
+
 // ========================================================== 11. drivers ====
 {
   const s = lightSlide("What the model is actually reading", "Explainability");
@@ -669,12 +716,57 @@ function footer(s, text) {
     fontFace: HEAD, fontSize: 15, bold: true, color: INK, margin: 0,
   });
   s.addText(
-    "Seven independent approaches converging on 0.22 is itself the finding: this is the information ceiling of administrative billing data for this outcome, not an under-tuning problem.",
-    { x: 7.94, y: 4.86, w: 4.5, h: 1.2, fontFace: BODY, fontSize: 12.5, color: "34525E", margin: 0, lineSpacing: 17 }
+    "Seven independent approaches converging on 0.22 is itself the finding: more modelling sophistication does not help here.\n\nThat is a ceiling on method \u2014 the learning curve shows it is not a ceiling on data.",
+    { x: 7.94, y: 4.86, w: 4.5, h: 1.2, fontFace: BODY, fontSize: 12, color: "34525E", margin: 0, lineSpacing: 16 }
   );
 
   footer(s, "Reproduce with make experiments · reports/ablation_study.csv");
   s.addNotes("Ensembling buying nothing tells you the three tree models make correlated errors — they read the same limited signal.");
+}
+
+// ================================================= 13. how sure are we? ====
+{
+  const s = lightSlide("Is 0.684 real, and is it the ceiling?", "Robustness");
+  s.addText("Two questions the headline number depends on but cannot answer on its own.", {
+    x: M, y: 1.44, w: CW, h: 0.3, fontFace: BODY, fontSize: 12.5, color: MUTED, margin: 0,
+  });
+
+  s.addImage({ path: path.join(REPORTS, "robustness.png"), x: M, y: 1.84, w: 7.5, h: 2.74 });
+
+  card(s, 8.32, 1.84, 4.4, 2.74, "FBE4E0");
+  s.addText("The reported split is the luckiest of seven", {
+    x: 8.6, y: 2.02, w: 3.84, h: 0.62,
+    fontFace: HEAD, fontSize: 14.5, bold: true, color: "9E3423", margin: 0, lineSpacing: 19,
+  });
+  s.addText(
+    "Across seven seeds the same pipeline averages PR-AUC 0.224 ± 0.010 and ROC-AUC 0.678 ± 0.006.\n\nSeed 42 was fixed before any evaluation, so this is luck rather than selection — but we report it rather than bury it.",
+    { x: 8.6, y: 2.72, w: 3.84, h: 1.66, fontFace: BODY, fontSize: 11.5, color: "7A2A1C", margin: 0, lineSpacing: 15 }
+  );
+
+  card(s, M, 4.76, 5.98, 1.44, MIST);
+  s.addText("95% confidence intervals", {
+    x: M + 0.28, y: 4.92, w: 5.42, h: 0.3,
+    fontFace: HEAD, fontSize: 14, bold: true, color: INK, margin: 0,
+  });
+  s.addText(
+    "ROC-AUC 0.684 [0.671, 0.698]   ·   PR-AUC 0.238 [0.213, 0.265]\nRecall 40.2% [37.6%, 42.7%]\n2,000 cluster resamples of patients, not rows.",
+    { x: M + 0.28, y: 5.24, w: 5.42, h: 0.88, fontFace: BODY, fontSize: 11.5, color: "34525E", margin: 0, lineSpacing: 15 }
+  );
+
+  card(s, 6.86, 4.76, 5.86, 1.44, "FFF3E6");
+  s.addText("This corrected one of our own claims", {
+    x: 7.14, y: 4.92, w: 5.3, h: 0.3,
+    fontFace: HEAD, fontSize: 14, bold: true, color: "8A5217", margin: 0,
+  });
+  s.addText(
+    "We had called 0.22 the information ceiling of the data. The learning curve is still rising — the last 43% of training data bought +0.0049. The ceiling is on method, not on data.",
+    { x: 7.14, y: 5.24, w: 5.3, h: 0.88, fontFace: BODY, fontSize: 11.5, color: "6B4213", margin: 0, lineSpacing: 15 }
+  );
+  s.addNotes(
+    "This slide is the answer to 'how do you know that number is real'. It is also the slide where we correct ourselves: " +
+    "the ablation shows a method ceiling, the learning curve shows more patients would still help slightly. " +
+    "That points at a multi-hospital dataset, not a better booster, as the next real improvement."
+  );
 }
 
 // ========================================================= 13. fairness ====
@@ -733,6 +825,63 @@ function footer(s, text) {
 
   s.addNotes(
     "Protected attributes are kept as features on purpose. Dropping race does not remove its influence — it is reconstructable from other columns — it only removes the ability to measure the disparity."
+  );
+}
+
+// ================================================ 15. the equity trade ====
+{
+  const s = lightSlide("We tried the obvious fix. It does not fix it.", "Equity experiment");
+  s.addText("One capacity threshold per age band, each fitted on validation, so every band flags 20% of its own members.", {
+    x: M, y: 1.44, w: CW, h: 0.3, fontFace: BODY, fontSize: 12.5, color: MUTED, margin: 0,
+  });
+
+  s.addImage({ path: path.join(REPORTS, "equity.png"), x: M, y: 1.84, w: 7.2, h: 2.64 });
+
+  const rows = [
+    ["Policy", "Recall", "TP"],
+    ["Global threshold", "40.2%", "901"],
+    ["Age-stratified", "39.7%", "891"],
+  ];
+  s.addTable(rows, {
+    x: 8.06, y: 1.94, w: 4.66,
+    colW: [2.34, 1.16, 1.16],
+    rowH: [0.34, 0.36, 0.36],
+    fontFace: BODY, fontSize: 12, color: "1F3D49",
+    border: { type: "solid", color: "DCE7EB", pt: 1 },
+    fill: { color: "FFFFFF" },
+  });
+  s.addText(
+    "Stratifying moves calls away from over-75s and toward the 40–60 band, at a cost of 10 true positives.",
+    { x: 8.06, y: 3.14, w: 4.66, h: 0.8, fontFace: BODY, fontSize: 12, color: "34525E", margin: 0, lineSpacing: 16 }
+  );
+  card(s, 8.06, 3.94, 4.66, 0.54, MIST);
+  s.addText("75+ ROC-AUC is 0.613 under both policies.", {
+    x: 8.3, y: 3.94, w: 4.18, h: 0.54,
+    fontFace: BODY, fontSize: 11.5, bold: true, color: INK, margin: 0, valign: "middle",
+  });
+
+  card(s, M, 4.7, 5.98, 1.5, INK);
+  s.addText("Thresholds move capacity. They cannot change ranking.", {
+    x: M + 0.3, y: 4.86, w: 5.42, h: 0.34,
+    fontFace: HEAD, fontSize: 14, bold: true, color: PAPER, margin: 0,
+  });
+  s.addText(
+    "The 75+ problem is discrimination, not calibration. No threshold policy repairs it — a real fix has to be upstream: features that separate frailty within an elderly population, or a model fitted for that group.",
+    { x: M + 0.3, y: 5.2, w: 5.42, h: 0.9, fontFace: BODY, fontSize: 11, color: CHALK, margin: 0, lineSpacing: 14 }
+  );
+
+  card(s, 6.86, 4.7, 5.86, 1.5, "FFF3E6");
+  s.addText("And is stratifying even fairer?", {
+    x: 7.14, y: 4.86, w: 5.3, h: 0.34,
+    fontFace: HEAD, fontSize: 14, bold: true, color: "8A5217", margin: 0,
+  });
+  s.addText(
+    "Patients over 75 have the highest base rate in the data (12.2%). A policy that calls fewer of them equalises exposure but withdraws attention from the highest-risk group. That is a hospital's value judgement, not a metric.",
+    { x: 7.14, y: 5.2, w: 5.3, h: 0.9, fontFace: BODY, fontSize: 11, color: "6B4213", margin: 0, lineSpacing: 14 }
+  );
+  s.addNotes(
+    "The honest framing: two definitions of fairness disagree here. Equal flag rate vs attention proportional to risk. " +
+    "We measured the trade and handed the choice to the hospital rather than picking one silently."
   );
 }
 

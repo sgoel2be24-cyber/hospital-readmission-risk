@@ -179,6 +179,41 @@ the format.
 
 Both rank the same features at the top, which is the reassuring outcome.
 
+## 9b. Quantifying uncertainty
+
+Added after the model was frozen. None of it changed the model; two parts of it
+corrected claims we were making about the model, which is exactly what this stage
+is for.
+
+**Cluster bootstrap** (`src/uncertainty.py`). 2,000 resamples of the test set,
+drawing *patients* with replacement and taking all of their encounters. Row-level
+resampling would understate the intervals for the same reason a row-level split
+overstates performance — encounters within a patient are correlated.
+
+Paired resamples are used for model-vs-model comparisons, so the shared sampling
+noise cancels and the interval is on the difference itself. This turned "LightGBM
+and XGBoost are indistinguishable" from a judgement into a measurement: Δ PR-AUC
++0.0022, 95% CI [−0.0017, +0.0058].
+
+**Seed sweep** (`src/robustness.py`). The entire result rested on one
+`GroupShuffleSplit` with `random_state=42`, and nothing in the project would have
+revealed a favourable draw. Re-running the full pipeline under seven seeds showed
+seed 42 is the *most* favourable: 0.238 PR-AUC against a cross-seed mean of
+0.224 ± 0.010. The seed was fixed before any evaluation, so it is luck rather
+than selection — but it is now reported.
+
+**Learning curve** (`src/robustness.py`). Scored on validation, so the "test read
+once" guarantee survives. It falsified a claim we had been making: the ablation
+study shows seven *methods* converge, which we had described as the information
+ceiling of the data. The curve is still rising at full training size (+0.0049
+PR-AUC from the last 43% of data). The correct statement is that the ceiling is
+on method, not on data.
+
+**Decision curve analysis** (`src/decision_curve.py`). Vickers & Elkin net
+benefit across threshold probabilities. Discrimination metrics say the ranking is
+good; this says whether *acting* on it beats calling everyone or calling nobody,
+across every cost assumption at once, without having to invent a currency figure.
+
 ## 10. Fairness
 
 A model can look fine in aggregate while systematically under-serving a subgroup.
@@ -191,6 +226,22 @@ does not remove its influence — it is reconstructable from other columns — i
 only removes the ability to measure the disparity. The gaps this surfaces are
 reported honestly in [RESULTS.md](RESULTS.md#fairness); the over-75 result is the
 one that would block deployment.
+
+Two further checks (`src/equity.py`):
+
+**Per-subgroup calibration**, not just discrimination. A risk score can be well
+calibrated overall while systematically misleading for one group. Gender and the
+two large racial groups come out near-perfect; patients over 75 have a
+calibration slope of 0.79, corroborating the discrimination finding from an
+independent angle.
+
+**Age-stratified thresholds**, tested rather than assumed. Giving each age band
+its own capacity threshold costs 10 true positives out of 901 and moves calls
+away from over-75s toward the 40–60 band. It does not fix the underlying problem,
+because thresholds reallocate capacity and cannot change ranking — and since
+over-75s have the highest base rate in the data, whether the reallocation is
+*fairer* is a value judgement rather than a metric. Documented as a measured
+trade-off, not a solution.
 
 ## 11. Deployment
 

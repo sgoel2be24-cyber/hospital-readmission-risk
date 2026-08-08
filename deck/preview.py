@@ -127,6 +127,15 @@ def slide_html(slide, idx, sw, sh, media: dict) -> str:
 
 def main() -> int:
     src = Path(sys.argv[1] if len(sys.argv) > 1 else "ML_Bubble_2026_Readmission_Risk.pptx")
+    # Optional 1-indexed slide filter, e.g. `preview.py deck.pptx 11,13,15`.
+    # Embedded images are large, so a whole-deck page can overwhelm a renderer;
+    # this keeps a focused review light enough to load.
+    wanted = None
+    out_name = "preview.html"
+    if len(sys.argv) > 2:
+        wanted = {int(n) for n in sys.argv[2].split(",")}
+        out_name = "preview_subset.html"
+
     prs = Presentation(str(src))
     sw, sh = prs.slide_width.inches, prs.slide_height.inches
 
@@ -145,7 +154,9 @@ def main() -> int:
                     pass
 
     body = "".join(
-        slide_html(s, i, sw, sh, media) for i, s in enumerate(prs.slides, 1)
+        slide_html(s, i, sw, sh, media)
+        for i, s in enumerate(prs.slides, 1)
+        if wanted is None or i in wanted
     )
     doc = f"""<!doctype html><meta charset="utf-8">
 <title>Deck preview — {html.escape(src.name)}</title>
@@ -163,9 +174,10 @@ def main() -> int:
 </style>
 {body}
 """
-    out = Path("deck/preview.html")
+    out = Path("deck") / out_name
     out.write_text(doc)
-    print(f"wrote {out} — {len(prs.slides)} slides, {len(media)} embedded image(s)")
+    shown = len(wanted) if wanted else len(prs.slides)
+    print(f"wrote {out} — {shown} of {len(prs.slides)} slides, {len(media)} embedded image(s)")
     return 0
 
 

@@ -1,0 +1,17 @@
+{
+  "method": "Vickers & Elkin decision curve analysis, held-out test set",
+  "useful_range_threshold_probability": {
+    "lo": 0.025,
+    "hi": 0.4300000000000001
+  },
+  "tolerated_calls_per_readmission": {
+    "at_lo": 39.0,
+    "at_hi": 1.3255813953488365
+  },
+  "at_deployed_threshold": {
+    "threshold_probability": 0.16500000000000004,
+    "net_benefit_model": 0.015649780699562778,
+    "net_benefit_call_everyone": -0.06169091039586738,
+    "net_true_positives_per_1000": 15.649780699562777
+  }
+}

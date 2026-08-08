@@ -21,3 +21,4 @@ deck/node_modules/
 deck/package-lock.json
 deck/package.json
 deck/preview.html
+deck/preview_subset.html

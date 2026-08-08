@@ -1,6 +1,7 @@
 PY := .venv/bin/python
 
-.PHONY: setup data tune train explain test api score all clean
+.PHONY: setup data tune train experiments explain uncertainty robustness equity \
+        decision-curve evidence test api score deck all clean
 
 ## one-time environment setup
 setup:
@@ -31,6 +32,25 @@ experiments:
 explain:
 	$(PY) -m src.explain
 
+## 95% cluster-bootstrap confidence intervals on every headline number (~2 min)
+uncertainty:
+	$(PY) -m src.uncertainty
+
+## seed sweep + learning curve: is the number real, and is it the ceiling? (~1 min)
+robustness:
+	$(PY) -m src.robustness
+
+## age-stratified thresholds + per-subgroup calibration
+equity:
+	$(PY) -m src.equity
+
+## decision curve analysis — does acting on the model beat the alternatives?
+decision-curve:
+	$(PY) -m src.decision_curve
+
+## every evidence step above, in order
+evidence: uncertainty robustness equity decision-curve
+
 test:
 	$(PY) -m pytest
 
@@ -51,7 +71,7 @@ deck:
 	$(PY) deck/preview.py ML_Bubble_2026_Readmission_Risk.pptx
 
 ## full reproduction from a clean checkout
-all: data train explain test
+all: data train explain evidence test
 
 clean:
 	rm -rf reports/figures/*.png reports/*.csv reports/metrics.json models/*.joblib
