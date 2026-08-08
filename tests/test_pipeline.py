@@ -140,3 +140,29 @@ def test_scoring_a_raw_row_end_to_end():
     assert len(scored) > 0
     assert scored["readmission_risk_30d"].between(0, 1).all()
     assert set(scored["flag_for_followup"].unique()) <= {0, 1}
+
+
+def test_age_bands_are_named_for_what_they_contain(dataset):
+    """`age` comes in 10-year brackets, so a cut point mid-bracket mislabels a band.
+
+    An earlier cut at 75 put the [70-80) bracket in the band below, so the band
+    reported as "75+" actually held only [80-90) and [90-100). The grouping was
+    right and the name was wrong — which is the kind of error that survives every
+    metric check. This pins the boundaries to the bracket midpoints that exist.
+    """
+    from src.config import AGE_BINS, AGE_LABELS, OLDEST_BAND
+
+    X, _, _ = dataset
+    bands = pd.cut(X["age_mid"], bins=AGE_BINS, labels=AGE_LABELS, right=False).astype(str)
+
+    # age_mid only ever takes bracket midpoints
+    assert set(X["age_mid"].unique()) <= {5.0, 15.0, 25.0, 35.0, 45.0, 55.0, 65.0, 75.0, 85.0, 95.0}
+
+    # every band boundary must fall between midpoints, never through a bracket
+    for edge in AGE_BINS[1:-1]:
+        assert edge % 10 == 0, f"cut at {edge} splits a 10-year bracket"
+        assert edge not in set(X["age_mid"].unique()), f"cut at {edge} lands on a bracket midpoint"
+
+    # the band named 80+ contains exactly the [80-90) and [90-100) brackets
+    assert set(X.loc[bands == OLDEST_BAND, "age_mid"].unique()) == {85.0, 95.0}
+    assert bands.nunique() == len(AGE_LABELS)

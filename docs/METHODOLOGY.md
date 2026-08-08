@@ -237,11 +237,26 @@ independent angle.
 
 **Age-stratified thresholds**, tested rather than assumed. Giving each age band
 its own capacity threshold costs 10 true positives out of 901 and moves calls
-away from the oldest band toward the 40–60 band. It does not fix the underlying problem,
-because thresholds reallocate capacity and cannot change ranking — and since
-the oldest band have the highest base rate in the data, whether the reallocation is
-*fairer* is a value judgement rather than a metric. Documented as a measured
-trade-off, not a solution.
+away from the oldest band toward the 40–60 band. It does not fix the underlying
+problem, because thresholds reallocate capacity and cannot change ranking — and
+since the over-80s have the highest base rate in the data, whether the
+reallocation is *fairer* is a value judgement rather than a metric. Documented as
+a measured trade-off, not a solution.
+
+**Root-cause diagnosis** (`src/subgroup_model.py`). Since no threshold policy can
+help, the remaining question is whether the *ranking* can be improved. Univariate
+AUC per feature per band — model-free, so it distinguishes "the data lacks signal"
+from "the model is not using it" — shows every feature's signal decaying
+monotonically with age. Three fixes (a dedicated model, and sample weighting at
+×3 and ×6) all lose to the global model. The gap is a property of the columns
+available, not of the estimator, and closing it needs frailty and
+functional-status variables this dataset does not carry.
+
+A note on the band names: `age` arrives in 10-year brackets, so `age_mid` takes
+only the values 5, 15, … 95. An earlier cut at 75 placed the `[70-80)` bracket in
+the band below, which meant the band reported as "75+" in fact held only
+`[80-90)` and `[90-100)`. The grouping was correct throughout; the label was not.
+Bands are now defined once in `src/config.py` and imported everywhere.
 
 ## 11. Deployment
 

@@ -572,6 +572,13 @@ optional.
 **4. Diabetic inpatients only, 1–14 day stays.** The model does not transfer to
 general medical populations without revalidation.
 
+**4b. The oldest patients cannot be ranked well, and the cause is the data.**
+ROC-AUC 0.613 for the 80+ band. Every feature's univariate signal decays
+monotonically with age, and a dedicated model, sample weighting, and stratified
+thresholds all fail to beat the global model. Closing this needs frailty index,
+functional status, cognition, and social support — variables administrative
+billing data omits. Until then the tool should not be relied on for this group.
+
 **5. 59.8% of readmissions are missed at 20% capacity.** This tool reprioritises
 attention. It does not identify every at-risk patient, and an unflagged patient
 is not a safe patient.
@@ -588,14 +595,17 @@ Every number above regenerates from a clean clone:
 make setup && make data && make tune && make train && make experiments && make explain && make evidence && make test
 ```
 
-`make evidence` runs the four analyses added after the model was frozen —
-bootstrap intervals, seed sweep and learning curve, equity, and the decision
-curve. None of them changed the model; two of them corrected claims made about
-it.
+`make evidence` runs the five analyses added after the model was frozen —
+bootstrap intervals, seed sweep and learning curve, equity, the decision curve,
+and the oldest-band diagnosis. None of them changed the model; three of them
+corrected claims made about it: the learning curve falsified the
+"information ceiling of the data" wording, the seed sweep showed the reported
+split is the most favourable of seven, and the subgroup diagnosis exposed a
+mislabelled age band.
 
 Fixed seed (42) throughout. Runtime: ~60 s for `train`, ~5 min for `tune`, ~2 min
-for `experiments`. 26 tests cover ICD-9 grouping, label construction, all three
-leakage paths, split determinism, feature consistency, the serving path, and the
-statistics added afterwards — that the bootstrap resamples whole patients rather
+for `experiments`. 27 tests cover ICD-9 grouping, label construction, all three
+leakage paths, split determinism, feature consistency, age-band labelling, the
+serving path, and the statistics added afterwards — that the bootstrap resamples whole patients rather
 than rows, and that the net-benefit formula behaves correctly at its known
 boundary cases.

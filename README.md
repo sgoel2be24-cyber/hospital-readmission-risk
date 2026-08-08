@@ -65,7 +65,7 @@ plus every metric and figure to `reports/`.
 | `make experiments` | 7-variant ablation study (~2 min) |
 | `make explain` | permutation importance + SHAP + reason codes |
 | `make evidence` | bootstrap CIs, seed sweep, learning curve, equity, decision curve, subgroup |
-| `make test` | 26 tests |
+| `make test` | 27 tests |
 | `make api` | serve the scoring API on `:8000` |
 | `make score` | batch-score every encounter to CSV |
 
@@ -100,8 +100,8 @@ src/decision_curve.py  net benefit vs call-everyone / call-nobody
 src/subgroup_model.py  why the oldest band cannot be predicted better
 src/predict.py       batch scoring CLI
 src/api.py           FastAPI service
-tests/               26 tests: leakage guards, serving path, bootstrap and
-                     net-benefit maths
+tests/               27 tests: leakage guards, age-band labelling, serving
+                     path, bootstrap and net-benefit maths
 ```
 
 ## Documentation
