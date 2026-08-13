@@ -6,8 +6,6 @@ come back.
 
 **ML Bubble 2026** — Track TE-BE, Design & Solve (Advanced)
 
----
-
 ## The problem
 
 Roughly one in nine diabetic hospital discharges results in a readmission within
