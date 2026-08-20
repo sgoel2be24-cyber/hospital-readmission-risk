@@ -6,8 +6,6 @@ come back.
 
 **ML Bubble 2026** — Track TE-BE, Design & Solve (Advanced)
 
----
-
 ## The problem
 
 Roughly one in nine diabetic hospital discharges results in a readmission within
@@ -23,7 +21,7 @@ That framing drives every modelling decision in this repository.
 Scoring every discharge and calling the highest-risk 20%:
 
 | | Model | Call 20% at random |
-|---|---|---|
+|---|---|---
 | Readmissions caught | **40.2%** | 20% |
 | Precision of the call list | **23.3%** | 11.3% |
 | Lift over base rate | **2.05×** | 1.00× |
